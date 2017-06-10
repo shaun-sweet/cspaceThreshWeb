@@ -1,6 +1,6 @@
 import argparse
 import cspaceThreshImg
-import cv2
+import cv2 # for checking the image
 
 
 
@@ -21,7 +21,7 @@ def __sanitize(filename):
 def __checkimg(imgPath):
     imgPath = __sanitize(imgPath)
     img = cv2.imread(imgPath)
-    if img is None:
+    if img is None or len(img.shape)==2:
          raise argparse.ArgumentTypeError("%s is an invalid image filename, \
             must be a three-channel image." % imgPath)
     return imgPath
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     parser.add_argument('imgPath', 
         help='Filename of the image to be thresholded (string)', type=__checkimg)
     parser.add_argument('cspaceLabel', 
-        help='Colorspace (string: BGR, HSV, HLS, Lab, Luv, YCrCb, XYZ, or Grayscale)', type=__checkcspace)
+        help='Colorspace (BGR, HSV, HLS, Lab, Luv, YCrCb, XYZ, or Grayscale (string))', type=__checkcspace)
     parser.add_argument('sliderPos1', 
         help='Channel 1 Min (int)', type=int)
     parser.add_argument('sliderPos2', 
@@ -67,14 +67,20 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # send arguments to the main function from cspaceThreshImg
+    # grab arguments
     imgPath = args.imgPath
     cspaceLabel = args.cspaceLabel
-    sliderPos = [sliderPos[i] for i in range(0,5)]
-    print('imgPath: ', imgPath, 
-        '\ncspaceLabel: ', cspaceLabel,
-        '\nsliderPos: ', sliderPos)
+    sliderPos = [args.sliderPos1, args.sliderPos2, args.sliderPos3, 
+        args.sliderPos4, args.sliderPos5, args.sliderPos6]
 
-    return_dict = cspaceThreshImg.main(args.imgPath, args.cspaceLabel, args.sliderPos)
+    # run the colorspace thresh script
+    outPath, cspaceLabel, lowerb, upperb = cspaceThreshImg.main(
+        args.imgPath, args.cspaceLabel, args.sliderPos)
+
+    # return a dict (eventually JSON dump)
+    return_dict = {'outPath' : out_path,
+        'cspaceLabel' : cspaceLabel,
+        'lowerBound': lowerb,
+        'upperBound': upperb}
 
     print(return_dict)
