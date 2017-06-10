@@ -42,13 +42,13 @@ def __cspaceSwitch(img, cspace):
     return img
 
 
-def __cspaceBounds(cspace, sliderPos):
+def __cspaceBounds(cspace, slider_pos):
     """Calculates the lower and upper bounds for thresholding a 
     colorspace based on the thresholding slider positions.
 
     Keyword arguments:
         cspace -- the colorspace to find bounds of; see keys in __cspaceSwitch()
-        sliderPos -- the positions of the thresholding trackbars; length 6 list
+        slider_pos -- the positions of the thresholding trackbars; length 6 list
 
     Returns:
         lowerb -- np.array containing the lower bounds for each channel threshold
@@ -60,8 +60,8 @@ def __cspaceBounds(cspace, sliderPos):
     mins = min_dict.get(cspace, np.array([0,0,0]))
     maxs = max_dict.get(cspace, np.array([255,255,255]))
 
-    lowerb = np.array([sliderPos[0], sliderPos[2], sliderPos[4]])
-    upperb = np.array([sliderPos[1], sliderPos[3], sliderPos[5]])
+    lowerb = np.array([slider_pos[0], slider_pos[2], slider_pos[4]])
+    upperb = np.array([slider_pos[1], slider_pos[3], slider_pos[5]])
     lowerb = lowerb * (maxs-mins) / 100 + mins # put in the correct range
     upperb = upperb * (maxs-mins) / 100 + mins
 
@@ -91,45 +91,36 @@ def __cspaceRange(img, cspace, lowerb, upperb):
 
 
 
-def main(imgPath, cspaceLabel, sliderPos):
+def main(img, cspace_label, slider_pos):
     """Computes the colorspace thresholded image based on 
     slider positions and selected colorspace.
 
     Inputs:
-        imgPath -- path to the input image (string)
-        cspaceLabel -- see colorspace labels (string)
-        sliderPos -- positions of the six sliders (6-long int list)
+        img -- input image
+        cspace_label -- see colorspace labels (string)
+        slider_pos -- positions of the six sliders (6-long int list)
 
     Available colorspace labels:
         BGR        HSV        HLS        Lab        
         Luv        YCrCb      XYZ        Grayscale
 
     returns
-        outPath -- path of saved processed image file (string)
-        colorspaceLabel -- colorspace of the image (string)
-        lowerBound -- threshold lower bound (list[])
-        upperBound -- threshold upper bound (list[])
+        bin_img -- binary processed image
+        cspace_label -- colorspace of the image (string)
+        lowerb -- threshold lower bound (list[])
+        upperb -- threshold upper bound (list[])
     """
-    img = cv2.imread(imgPath)
 
     # create colorspace labels to be displayed
     cspace_dict = {'BGR':0,'HSV':1,'HLS':2,'Lab':3,'Luv':4,'YCrCb':5,'XYZ':6,'Gray':7}
-    cspace = cspace_dict[cspaceLabel]
+    cspace = cspace_dict[cspace_label]
 
     # create thresholded image
-    lowerb, upperb = __cspaceBounds(cspace, sliderPos)
+    lowerb, upperb = __cspaceBounds(cspace, slider_pos)
     bin_img = __cspaceRange(img, cspace, lowerb, upperb)
 
     # output processing
     lowerb = lowerb.tolist()
     upperb = upperb.tolist()
-    out_path = 'output.png'
-    cv2.imwrite(out_path, bin_img)
-
-    return_dict = {
-        'outPath' : out_path,
-        'cspaceLabel' : cspaceLabel,
-        'lowerBound': lowerb,
-        'upperBound': upperb}
     
-    return return_dict
+    return bin_img, cspace_label, lowerb, upperb

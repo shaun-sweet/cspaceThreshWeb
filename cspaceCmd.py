@@ -15,7 +15,7 @@ __email__ = "ar@reynoldsalexander.com"
 
 def __sanitize(filename):
     return "".join([c for c in filename 
-        if c.isalpha() or c.isdigit() or c in ['.','_']]).rstrip()
+        if c.isalpha() or c.isdigit() or c in ['.','_','/']]).rstrip()
 
 
 def __checkimg(imgPath):
@@ -43,7 +43,7 @@ def __checkcspace(cspace):
 if __name__ == "__main__":
     """To be ran from command line
 
-    Usage: python3 cspaceCmd.py lane.jpg HSV 0 16 21 72 78 100
+    Usage: python3 cspaceCmd.py input/lane.jpg HSV 0 16 21 72 78 100
     """
     parser = argparse.ArgumentParser(description='Color threshold an image in any colorspace \
         and save it to a file.')
@@ -73,12 +73,20 @@ if __name__ == "__main__":
     sliderPos = [args.sliderPos1, args.sliderPos2, args.sliderPos3, 
         args.sliderPos4, args.sliderPos5, args.sliderPos6]
 
+    # read input image
+    img = cv2.imread(imgPath)
+
     # run the colorspace thresh script
-    outPath, cspaceLabel, lowerb, upperb = cspaceThreshImg.main(
-        args.imgPath, args.cspaceLabel, args.sliderPos)
+    outImg, cspaceLabel, lowerb, upperb = cspaceThreshImg.main(
+        img, cspaceLabel, sliderPos)
+
+    # write the output image
+    outPath = 'output/output.png'
+    os.makedirs(outPath, exist_ok=True)
+    cv2.imwrite(outPath, outImg)
 
     # return a dict (eventually JSON dump)
-    return_dict = {'outPath' : out_path,
+    return_dict = {'outPath' : outPath,
         'cspaceLabel' : cspaceLabel,
         'lowerBound': lowerb,
         'upperBound': upperb}
